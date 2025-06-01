@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SMTP Mailer</title>
+  <link rel="icon" href="https://jkartik.in/favicon.ico" type="image/x-icon" />
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 2rem;
+      font-family: 'Fira Code', monospace;
+      background-color: #111;
+      color: #e0e0e0;
+    }
+
+    h1 {
+      text-align: center;
+      color: #0ff;
+      font-weight: 500;
+      margin-bottom: 2rem;
+      text-shadow: 0 0 10px #0ff5;
+    }
+
+    form {
+      max-width: 700px;
+      margin: auto;
+      background-color: #1a1a1a;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,255,255,0.1);
+    }
+
+    label {
+      display: block;
+      margin-top: 1.2rem;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    textarea {
+      width: 100%;
+      margin-top: 0.3rem;
+      padding: 0.6rem;
+      font-family: inherit;
+      font-size: 1rem;
+      background: #111;
+      color: #0ff;
+      border: 1px solid #0ff5;
+      border-radius: 6px;
+      outline: none;
+      transition: border 0.3s;
+    }
+
+    input:focus, textarea:focus {
+      border-color: #0ff;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    .radio-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: #111;
+      border: 1px solid #0ff5;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .radio-option input[type="radio"] {
+      appearance: none;
+      width: 1rem;
+      height: 1rem;
+      border: 2px solid #0ff5;
+      border-radius: 50%;
+      background: transparent;
+      position: relative;
+    }
+
+    .radio-option input[type="radio"]:checked::before {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 6px;
+      height: 6px;
+      background: #0ff;
+      border-radius: 50%;
+    }
+
+    .chips-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 6px;
+      background: #111;
+      border: 1px solid #0ff5;
+      border-radius: 6px;
+      margin-top: 0.3rem;
+    }
+
+    .chip {
+      background: #0ff2;
+      color: #0ff;
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chip button {
+      background: transparent;
+      border: none;
+      color: #f33;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .chips-container input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: #0ff;
+      font-family: inherit;
+      font-size: 1rem;
+      outline: none;
+      min-width: 120px;
+    }
+
+    .cc-bcc-toggle {
+      margin-top: 1rem;
+      color: #0ff;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .file-display {
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      color: #0ff;
+    }
+
+    .attachment-btn {
+      margin-top: 0.5rem;
+      background: #0ff;
+      color: #000;
+      font-weight: bold;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-block;
+    }
+
+    .submit-btn {
+      margin-top: 2rem;
+      width: 100%;
+      padding: 0.75rem;
+      background: #0ff;
+      color: #000;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    ul.file-display {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    ul.file-display li {
+      margin: 0.25rem 0;
+      background: #0ff2;
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      color: #0ff;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .remove-btn {
+      float: right;
+      background: transparent;
+      border: none;
+      color: rgba(255, 0, 0, 0.66);
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0;
+      margin-left: 1rem;
+    }
+
+    .response-message {
+      margin-top: 1rem;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 1rem;
+      }
+
+      form {
+        padding: 1.5rem;
+      }
+
+      .radio-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<h1>Send Mail Securely</h1>
+
+<form id="mailerForm">
+  <label>Sender Name</label>
+  <input type="text" name="sender_name" required>
+
+  <label>Sender Email</label>
+  <input type="email" name="sender_email" required>
+
+  <label>To</label>
+  <div class="chips-container" id="to-container">
+    <input id="to-input" type="text" />
+  </div>
+
+  <button type="button" class="cc-bcc-toggle" onclick="toggleCCBCC()">Add CC/BCC</button>
+
+  <div id="cc-bcc-section" style="display:none;">
+    <label>CC</label>
+    <div class="chips-container" id="cc-container">
+      <input id="cc-input" type="text" />
+    </div>
+
+    <label>BCC</label>
+    <div class="chips-container" id="bcc-container">
+      <input id="bcc-input" type="text" />
+    </div>
+  </div>
+
+  <label>Subject</label>
+  <input type="text" name="subject">
+
+  <label>Body</label>
+  <textarea id="bodyTextArea" name="body" required></textarea>
+
+  <label>Type</label>
+  <div class="radio-group">
+    <label class="radio-option">
+      <input type="radio" name="type" value="raw" checked onchange="switchBodyType(this)">
+      Raw
+    </label>
+    <label class="radio-option">
+      <input type="radio" name="type" value="html" onchange="switchBodyType(this)">
+      HTML
+    </label>
+  </div>
+
+  <label>Password</label>
+  <input type="password" name="password" required>
+
+  <label>Attachments</label>
+  <button type="button" class="attachment-btn" onclick="triggerFileInput()">Add Attachment</button>
+  <input type="file" id="realFileInput" multiple>
+  <ul id="fileList" class="file-display"></ul>
+
+  <button type="submit" class="submit-btn">Send Email</button>
+  <div class="response-message" id="response"></div>
+</form>
+
+<script>
+  let rawBody = "";
+  let htmlBody = "";
+
+  function switchBodyType(radio) {
+    const body = document.getElementById("bodyTextArea");
+    if (radio.value === "html") {
+      rawBody = body.value;
+      body.value = htmlBody;
+    } else {
+      htmlBody = body.value;
+      body.value = rawBody;
+    }
+  }
+
+  const fileInput = document.getElementById("realFileInput");
+  const fileListDisplay = document.getElementById("fileList");
+  const attachments = [];
+  const toInput = document.getElementById("to-input");
+  const ccInput = document.getElementById("cc-input");
+  const bccInput = document.getElementById("bcc-input");
+
+  let toList = [], ccList = [], bccList = [];
+
+  function triggerFileInput() {
+    fileInput.click();
+  }
+
+  fileInput.addEventListener("change", () => {
+    for (let file of fileInput.files) {
+      attachments.push(file);
+    }
+    updateFileList();
+    fileInput.value = "";
+  });
+
+  function updateFileList() {
+    fileListDisplay.innerHTML = "";
+    attachments.forEach((file, index) => {
+      const li = document.createElement("li");
+      li.innerHTML = `${file.name} <button class="remove-btn" onclick="removeFile(${index})">✖</button>`;
+      fileListDisplay.appendChild(li);
+    });
+  }
+
+  function removeFile(index) {
+    attachments.splice(index, 1);
+    updateFileList();
+  }
+
+  function createChip(value, container, list) {
+    const chip = document.createElement("span");
+    chip.className = "chip";
+    chip.innerHTML = `${value} <button onclick="removeChip(this, '${container.id}', '${value}')">×</button>`;
+    container.insertBefore(chip, container.querySelector("input"));
+    list.push(value);
+  }
+
+  function removeChip(button, containerId, value) {
+    const container = document.getElementById(containerId);
+    container.removeChild(button.parentElement);
+    const list = (containerId === "to-container") ? toList : (containerId === "cc-container") ? ccList : bccList;
+    const index = list.indexOf(value);
+    if (index !== -1) list.splice(index, 1);
+  }
+
+  function tryAddChip(input) {
+    const val = input.value.trim();
+    if (!val) return false;
+
+    const container = input.parentElement;
+    const list = (input === toInput) ? toList : (input === ccInput) ? ccList : bccList;
+
+    if (!list.includes(val)) {
+      createChip(val, container, list);
+      input.value = "";
+      checkCCBCCVisibility();
+      return true;
+    }
+    return false;
+  }
+
+  [toInput, ccInput, bccInput].forEach(input => {
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        tryAddChip(input);
+      }
+    });
+
+    input.addEventListener("blur", () => {
+      tryAddChip(input);
+    });
+  });
+
+  function toggleCCBCC() {
+    const section = document.getElementById("cc-bcc-section");
+    section.style.display = (section.style.display === "none") ? "block" : "none";
+  }
+
+  function checkCCBCCVisibility() {
+    const section = document.getElementById("cc-bcc-section");
+    if (ccList.length || bccList.length) section.style.display = "block";
+  }
+
+  document.getElementById("mailerForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const btn = this.querySelector(".submit-btn");
+    const responseBox = document.getElementById("response");
+
+    if (toList.length === 0) {
+      responseBox.textContent = "Please add at least one recipient in the To field.";
+      responseBox.style.color = "#f00";
+      return;
+    }
+
+    const currentType = document.querySelector('input[name="type"]:checked').value;
+    const body = document.getElementById("bodyTextArea").value;
+    if (currentType === "html") {
+      htmlBody = body;
+    } else {
+      rawBody = body;
+    }
+
+    btn.disabled = true;
+
+    const formData = new FormData(this);
+    toList.forEach(val => formData.append("to", val));
+    ccList.forEach(val => formData.append("cc", val));
+    bccList.forEach(val => formData.append("bcc", val));
+    attachments.forEach(file => formData.append("attachment", file));
+
+    formData.set("body", rawBody);
+    if (htmlBody.trim()) formData.append("html", htmlBody);
+
+    fetch("/send", {
+      method: "POST",
+      body: formData
+    }).then(r => r.json()).then(data => {
+      responseBox.textContent = data.message;
+      responseBox.style.color = data.color || "#0f0";
+      this.reset();
+      toList = []; ccList = []; bccList = [];
+      rawBody = ""; htmlBody = "";
+      attachments.length = 0;
+      fileListDisplay.innerHTML = "";
+      document.querySelectorAll(".chip").forEach(c => c.remove());
+      document.getElementById("cc-bcc-section").style.display = "none";
+      btn.disabled = false;
+    }).catch(err => {
+      responseBox.textContent = "Error connecting with the backend.";
+      responseBox.style.color = "#f00";
+      btn.disabled = true;
+      btn.style.cursor = "not-allowed";
+    });
+  });
+</script>
+
+</body>
+</html>

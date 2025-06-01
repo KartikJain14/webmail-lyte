@@ -1,0 +1,1 @@
+I already have already setup catchall incoming mails and now, I have setup a SMTP service that allows to send as `<anything>@mydomain.tld` so now, I am making a webmail client which will use the SMTP credentials for outbound mails.

@@ -1,0 +1,27 @@
+{
+  "name": "webmail-lyte",
+  "version": "1.0.0",
+  "description": "I already have already setup catchall incoming mails and now, I have setup a SMTP service that allows to send as `<anything>@mydomain.tld` so now, I am making a webmail which will use the SMTP credentials to send mails.",
+  "homepage": "https://github.com/KartikJain14/WebMail-Lyte#readme",
+  "bugs": {
+    "url": "https://github.com/KartikJain14/WebMail-Lyte/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KartikJain14/WebMail-Lyte.git"
+  },
+  "license": "BSD 3-Clause License",
+  "author": "Kartik Jain",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "multer": "^2.0.0",
+    "nodemailer": "^7.0.3"
+  }
+}
